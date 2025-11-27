@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mycelial Symbiont (Standalone)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #050505; font-family: 'Space Grotesk', sans-serif; }
+        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
+        .pointer-events-auto { pointer-events: auto; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        /* Custom animations */
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-pulse-slow { animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+
+    <div id="ui-layer" class="flex flex-col justify-between p-6">
+        <!-- Header -->
+        <header class="flex justify-between items-start">
+            <div class="bg-black/60 backdrop-blur-md border border-white/10 p-4 rounded-lg max-w-md w-full pointer-events-auto">
+                <h1 class="text-xl font-bold font-mono text-white mb-4 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.2.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"/></svg>
+                    MYCELIAL_SYMBIONT_STANDALONE
+                </h1>
+
+                <div class="space-y-4">
+                    <!-- Water -->
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between text-xs font-mono text-gray-400">
+                            <span class="flex items-center gap-2">WATER_LEVEL</span>
+                            <span id="val-water">50%</span>
+                        </div>
+                        <div class="h-2 w-full bg-gray-800 rounded-full overflow-hidden">
+                            <div id="bar-water" class="h-full bg-cyan-500 transition-all duration-500 ease-out" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    <!-- Nutrients -->
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between text-xs font-mono text-gray-400">
+                            <span class="flex items-center gap-2">NUTRIENT_DENSITY</span>
+                            <span id="val-nutrients">50%</span>
+                        </div>
+                        <div class="h-2 w-full bg-gray-800 rounded-full overflow-hidden">
+                            <div id="bar-nutrients" class="h-full bg-green-500 transition-all duration-500 ease-out" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    <!-- Darkness -->
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between text-xs font-mono text-gray-400">
+                            <span class="flex items-center gap-2">AMBIENT_DARKNESS</span>
+                            <span id="val-darkness">50%</span>
+                        </div>
+                        <div class="h-2 w-full bg-gray-800 rounded-full overflow-hidden">
+                            <div id="bar-darkness" class="h-full bg-purple-500 transition-all duration-500 ease-out" style="width: 50%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-black/60 backdrop-blur-md border border-white/10 p-4 rounded-lg pointer-events-auto">
+                <div class="text-xs text-gray-500 font-mono mb-1">ORGANISM_STATE</div>
+                <div class="flex items-center gap-2">
+                    <span class="relative flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                    </span>
+                    <span class="text-green-400 font-mono">GROWING</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Footer Controls -->
+        <footer class="flex flex-col items-center gap-6 pb-8">
+            <div class="bg-black/80 backdrop-blur-xl border border-yellow-500/30 px-6 py-3 rounded-full flex items-center gap-3 animate-pulse-slow pointer-events-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span id="want-display" class="text-yellow-500 font-mono font-bold tracking-widest">
+                    ORGANISM REQUIRES: WATER
+                </span>
+            </div>
+
+            <div class="flex gap-4 pointer-events-auto">
+                <button onclick="game.addResource('water', 20)" class="group flex flex-col items-center justify-center w-24 h-24 bg-black/40 backdrop-blur-sm border border-white/10 rounded-xl hover:bg-cyan-950 hover:border-cyan-500/50 text-cyan-400 transition-all active:scale-95">
+                    <div class="mb-2 group-hover:scale-110 transition-transform">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.8-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"/><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"/></svg>
+                    </div>
+                    <span class="text-xs font-bold font-mono">MIST</span>
+                </button>
+                <button onclick="game.addResource('nutrients', 20)" class="group flex flex-col items-center justify-center w-24 h-24 bg-black/40 backdrop-blur-sm border border-white/10 rounded-xl hover:bg-green-950 hover:border-green-500/50 text-green-400 transition-all active:scale-95">
+                    <div class="mb-2 group-hover:scale-110 transition-transform">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.2.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"/></svg>
+                    </div>
+                    <span class="text-xs font-bold font-mono">FEED</span>
+                </button>
+                <button onclick="game.addResource('darkness', 20)" class="group flex flex-col items-center justify-center w-24 h-24 bg-black/40 backdrop-blur-sm border border-white/10 rounded-xl hover:bg-purple-950 hover:border-purple-500/50 text-purple-400 transition-all active:scale-95">
+                    <div class="mb-2 group-hover:scale-110 transition-transform">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                    </div>
+                    <span class="text-xs font-bold font-mono">SHADE</span>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+        import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+
+        // --- GAME LOGIC (Ported from FungiGame.ts) ---
+        class FungiGame {
+            constructor() {
+                this.nodes = [];
+                this.links = [];
+                this.resources = { water: 50, nutrients: 50, darkness: 50 };
+                this.wants = ['Water', 'Nutrients', 'Darkness'];
+                this.currentWant = 'Water';
+                this.wantTimer = 0;
+                this.WANT_CYCLE_TIME = 20;
+                this.growthRate = 0.05;
+                this.reset();
+            }
+
+            reset() {
+                this.nodes = [];
+                this.links = [];
+                const rootId = crypto.randomUUID();
+                this.nodes.push({
+                    id: rootId,
+                    position: new THREE.Vector3(0, 0, 0),
+                    parentId: null,
+                    age: 0
+                });
+                for(let i=0; i<3; i++) this.growNode(rootId);
+            }
+
+            update(delta) {
+                this.wantTimer += delta;
+                if (this.wantTimer > this.WANT_CYCLE_TIME) {
+                    this.wantTimer = 0;
+                    this.currentWant = this.wants[Math.floor(Math.random() * this.wants.length)];
+                    updateUIWant(this.currentWant);
+                }
+
+                this.resources.water = Math.max(0, this.resources.water - delta * 0.5);
+                this.resources.nutrients = Math.max(0, this.resources.nutrients - delta * 0.3);
+
+                if (Math.random() < this.growthRate) {
+                    this.attemptGrowth();
+                }
+                
+                updateUIResources(this.resources);
+            }
+
+            attemptGrowth() {
+                if (this.resources.water > 20 && this.resources.nutrients > 20) {
+                    const candidates = this.nodes.filter(n => n.age < 50);
+                    if (candidates.length === 0) return;
+                    const parent = candidates[Math.floor(Math.random() * candidates.length)];
+                    this.growNode(parent.id);
+                    this.resources.water -= 2;
+                    this.resources.nutrients -= 2;
+                }
+            }
+
+            growNode(parentId) {
+                const parent = this.nodes.find(n => n.id === parentId);
+                if (!parent) return;
+
+                const direction = new THREE.Vector3(
+                    (Math.random() - 0.5) * 2,
+                    Math.random() * 1.5,
+                    (Math.random() - 0.5) * 2
+                ).normalize().multiplyScalar(0.5 + Math.random() * 0.5);
+
+                const newPos = parent.position.clone().add(direction);
+                const newId = crypto.randomUUID();
+
+                const newNode = {
+                    id: newId,
+                    position: newPos,
+                    parentId: parentId,
+                    age: 0
+                };
+                this.nodes.push(newNode);
+                
+                const newLink = {
+                    id: `${parentId}-${newId}`,
+                    source: parent.position,
+                    target: newPos
+                };
+                this.links.push(newLink);
+
+                // Notify Scene
+                sceneManager.addNode(newNode);
+                sceneManager.addLink(newLink);
+            }
+
+            addResource(type, amount) {
+                this.resources[type] = Math.min(100, this.resources[type] + amount);
+                updateUIResources(this.resources);
+            }
+        }
+
+        // --- UI LOGIC ---
+        function updateUIResources(res) {
+            document.getElementById('val-water').innerText = Math.round(res.water) + '%';
+            document.getElementById('bar-water').style.width = res.water + '%';
+            
+            document.getElementById('val-nutrients').innerText = Math.round(res.nutrients) + '%';
+            document.getElementById('bar-nutrients').style.width = res.nutrients + '%';
+            
+            document.getElementById('val-darkness').innerText = Math.round(res.darkness) + '%';
+            document.getElementById('bar-darkness').style.width = res.darkness + '%';
+        }
+
+        function updateUIWant(want) {
+            document.getElementById('want-display').innerText = 'ORGANISM REQUIRES: ' + want.toUpperCase();
+        }
+
+        // --- 3D SCENE MANAGER ---
+        class SceneManager {
+            constructor() {
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(0x050505);
+                this.scene.fog = new THREE.Fog(0x050505, 5, 30);
+
+                this.camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+                this.camera.position.set(4, 3, 4);
+
+                this.renderer = new THREE.WebGLRenderer({ antialias: true });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                document.getElementById('canvas-container').appendChild(this.renderer.domElement);
+
+                this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+                this.controls.enableDamping = true;
+                this.controls.autoRotate = true;
+                this.controls.autoRotateSpeed = 0.5;
+
+                this.setupLights();
+                this.setupStars();
+                this.setupGrid();
+
+                this.nodeGeometry = new THREE.SphereGeometry(0.08, 16, 16);
+                this.nodeMaterial = new THREE.MeshStandardMaterial({ color: 0x4ade80, emissive: 0x22c55e, emissiveIntensity: 1.5 });
+                this.rootMaterial = new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xeab308, emissiveIntensity: 1.5 });
+                
+                this.lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3 });
+
+                window.addEventListener('resize', () => this.onWindowResize(), false);
+            }
+
+            setupLights() {
+                const ambient = new THREE.AmbientLight(0x404040, 1);
+                this.scene.add(ambient);
+                
+                const p1 = new THREE.PointLight(0xffffff, 1);
+                p1.position.set(10, 10, 10);
+                this.scene.add(p1);
+
+                const p2 = new THREE.PointLight(0xa855f7, 1); // Purple fill
+                p2.position.set(-10, -5, -10);
+                this.scene.add(p2);
+            }
+
+            setupStars() {
+                const geometry = new THREE.BufferGeometry();
+                const count = 2000;
+                const positions = new Float32Array(count * 3);
+                for(let i=0; i<count*3; i++) {
+                    positions[i] = (Math.random() - 0.5) * 100;
+                }
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                const material = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1, transparent: true, opacity: 0.8 });
+                this.stars = new THREE.Points(geometry, material);
+                this.scene.add(this.stars);
+            }
+
+            setupGrid() {
+                const grid = new THREE.GridHelper(20, 20, 0x333333, 0x111111);
+                grid.position.y = -2;
+                this.scene.add(grid);
+            }
+
+            addNode(node) {
+                const mesh = new THREE.Mesh(this.nodeGeometry, node.parentId ? this.nodeMaterial : this.rootMaterial);
+                mesh.position.copy(node.position);
+                this.scene.add(mesh);
+            }
+
+            addLink(link) {
+                const geometry = new THREE.BufferGeometry().setFromPoints([link.source, link.target]);
+                const line = new THREE.Line(geometry, this.lineMaterial);
+                this.scene.add(line);
+            }
+
+            onWindowResize() {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            render() {
+                this.controls.update();
+                this.renderer.render(this.scene, this.camera);
+            }
+        }
+
+        // --- INIT ---
+        const game = new FungiGame();
+        const sceneManager = new SceneManager();
+        window.game = game; // Expose for button clicks
+        window.sceneManager = sceneManager;
+
+        // Initial Render of existing nodes (if any from reset)
+        game.nodes.forEach(n => sceneManager.addNode(n));
+        game.links.forEach(l => sceneManager.addLink(l));
+
+        // Loop
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            game.update(delta);
+            sceneManager.render();
+        }
+        animate();
+
+    </script>
+</body>
+</html>

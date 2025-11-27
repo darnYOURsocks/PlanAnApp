@@ -24,11 +24,6 @@ export function FungiScene({ onUpdate }: FungiSceneProps) {
       setLinks([...gameInstance.links]);
     }
 
-    // Animate group rotation slowly
-    if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.1;
-    }
-
     // Send stats back to UI
     onUpdate({ ...gameInstance.resources }, gameInstance.currentWant);
   });

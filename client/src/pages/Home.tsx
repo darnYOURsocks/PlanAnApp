@@ -18,7 +18,7 @@ export default function Home() {
     <div className="w-full h-screen bg-black relative overflow-hidden">
       {/* 3D Layer */}
       <div className="absolute inset-0 z-0">
-        <Canvas camera={{ position: [5, 5, 5], fov: 45 }}>
+        <Canvas camera={{ position: [4, 3, 4], fov: 50 }}>
           <color attach="background" args={['#050505']} />
           <fog attach="fog" args={['#050505', 5, 30]} />
           
@@ -27,10 +27,12 @@ export default function Home() {
           <FungiScene onUpdate={handleUpdate} />
           
           <OrbitControls 
-            maxPolarAngle={Math.PI / 2} 
-            minDistance={2}
-            maxDistance={20}
-            enablePan={false}
+            enablePan={true}
+            enableZoom={true}
+            minDistance={1}
+            maxDistance={50}
+            autoRotate={true}
+            autoRotateSpeed={0.5}
           />
         </Canvas>
       </div>
